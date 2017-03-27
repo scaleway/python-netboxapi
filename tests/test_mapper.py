@@ -17,14 +17,23 @@ class TestNetboxMapper():
 
     def test_get(self, mapper):
         url = mapper._url
-        expected_json = {"id": 1, "name": "test"}
+        expected_attr = {"id": 1, "name": "test"}
         with requests_mock.Mocker() as m:
-            m.register_uri("get", url, json=expected_json)
-            response = mapper.get()
+            m.register_uri("get", url, json=expected_attr)
+            child_mapper = next(mapper.get())
+
+        for key, val in expected_attr.items():
+            assert getattr(child_mapper, key) == val
 
     def test_get_submodel(self, mapper):
-        url = mapper._url.rstrip("/") + "/submodel"
-        expected_json = {"id": 1, "name": "test"}
+        url = mapper._url
+        expected_attr = {"id": 1, "name": "first_model"}
+
         with requests_mock.Mocker() as m:
-            m.register_uri("get", url, json=expected_json)
-            response = mapper.get("submodel")
+            m.register_uri("get", url, json={"id": 1, })
+            parent_mapper = next(mapper.get())
+            m.register_uri("get", url + "submodel", json=expected_attr)
+            submodel_mapper = next(parent_mapper.get("submodel"))
+
+        for key, val in expected_attr.items():
+            assert getattr(submodel_mapper, key) == val
