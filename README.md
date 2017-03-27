@@ -22,7 +22,7 @@ Initialize a new `NetboxAPI` object:
 
 ```python
 netbox_api = NetboxAPI(
-    url="netbox.example.com", login="login", password="password"
+    url="netbox.example.com", username="user", password="password"
 )
 ```
 
@@ -52,7 +52,7 @@ Initialize a new `NetboxMapper` object:
 
 ```python
 netbox_api = NetboxAPI(
-    url="netbox.example.com", login="login", password="password"
+    url="netbox.example.com", username="user", password="password"
 )
 netbox_mapper = NetboxMapper(netbox_api, app_name="dcim", model="sites")
 ```
@@ -60,7 +60,7 @@ netbox_mapper = NetboxMapper(netbox_api, app_name="dcim", model="sites")
 Then get all objects of the model:
 
 ```python
->>> sites = list(netbox_api.get())
+>>> sites = list(netbox_mapper.get())
 [<NetboxMapper>, <NetboxMapper>, …]
 
 >>> print(sites[0].id)
@@ -72,7 +72,7 @@ Then get all objects of the model:
 Or get a specific site by its id:
 
 ```python
->>> netbox_api.get(1)
+>>> netbox_mapper.get(1)
 ```
 
 
