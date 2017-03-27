@@ -5,6 +5,77 @@ Python Netbox API
 
 Python client API for Netbox, using requests.
 
+
+Usage
+-----
+
+Netbox API
+==========
+
+Import `NetboxAPI`:
+
+```python
+from netboxapi import NetboxAPI
+```
+
+Initialize a new `NetboxAPI` object:
+
+```python
+netbox_api = NetboxAPI(
+    url="netbox.example.com", login="login", password="password"
+)
+```
+
+Then use multiple available methods to interact with the api:
+
+```python
+>>> netbox_api.get("netbox.example.com/api/dcim/sites/1/racks")
+{
+    "id": 1,
+    "name": "Some rack",
+    …
+}
+```
+
+Netbox Mapper
+=============
+
+`NetboxMapper` is available to interact with Netbox objects. Received json from
+the netbox API is converted into mapper objects, by setting its attributes
+accordingly to the dict. To use it, first import `NetboxMapper`:
+
+```python
+from netboxapi import NetboxAPI, NetboxMapper
+```
+
+Initialize a new `NetboxMapper` object:
+
+```python
+netbox_api = NetboxAPI(
+    url="netbox.example.com", login="login", password="password"
+)
+netbox_mapper = NetboxMapper(netbox_api, app_name="dcim", model="sites")
+```
+
+Then get all objects of the model:
+
+```python
+>>> sites = list(netbox_api.get())
+[<NetboxMapper>, <NetboxMapper>, …]
+
+>>> print(sites[0].id)
+1
+>>> print(sites[0].name)
+"Some site"
+```
+
+Or get a specific site by its id:
+
+```python
+>>> netbox_api.get(1)
+```
+
+
 Dependencies
 ------------
   * python 3.4 (it certainly works with prior versions, just not tested)
