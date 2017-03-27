@@ -12,9 +12,6 @@ setup(
     version="0.0.1",
 
     description="Client API for Netbox",
-    long_description=open(
-        path.join(path.dirname(__file__), "README.md")
-    ).read(),
 
     author="Anthony25 <Anthony Ruhier>",
     author_email="anthony.ruhier@gmail.com",
