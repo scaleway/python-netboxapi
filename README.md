@@ -21,8 +21,22 @@ from netboxapi import NetboxAPI
 Initialize a new `NetboxAPI` object:
 
 ```python
+netbox_api = NetboxAPI(url="netbox.example.com")
+
+# or if you enabled the authentication
 netbox_api = NetboxAPI(
     url="netbox.example.com", username="user", password="password"
+)
+
+# or if you have generated a token
+netbox_api = NetboxAPI(
+    url="netbox.example.com", token="token"
+)
+
+# but the following is useless, as the token will not be used
+netbox_api = NetboxAPI(
+    url="netbox.example.com", username="user", password="password",
+    token="token"
 )
 ```
 

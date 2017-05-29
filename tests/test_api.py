@@ -3,12 +3,14 @@ import pytest
 import requests_mock
 
 from netboxapi import NetboxAPI
+from netboxapi.api import _HTTPTokenAuth
 
 
 class TestNetboxAPI():
     url = "http://localhost/"
     login = "login"
     password = "password"
+    token = "testing_token"
 
     @pytest.fixture()
     def prepared_api(self):
@@ -27,6 +29,10 @@ class TestNetboxAPI():
 
     def test_get_loggedin(self, **kwargs):
         prepared_api = NetboxAPI(self.url, self.login, self.password)
+        self._generic_test_http_method_request(prepared_api, "get")
+
+    def test_get_loggedin_token(self, **kwargs):
+        prepared_api = NetboxAPI(self.url, token=self.token)
         self._generic_test_http_method_request(prepared_api, "get")
 
     def test_post(self, prepared_api, **kwargs):
@@ -51,3 +57,11 @@ class TestNetboxAPI():
             m.register_uri(method, url, json=expected_json)
             response = getattr(prepared_api, method)(url)
         assert response == expected_json
+
+
+class TestHTTPTokenAuth():
+    def test_eq(self):
+        assert _HTTPTokenAuth("test") == _HTTPTokenAuth("test")
+
+    def test_not_eq(self):
+        assert _HTTPTokenAuth("test") != _HTTPTokenAuth("test1")
