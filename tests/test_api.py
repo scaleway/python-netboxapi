@@ -16,6 +16,14 @@ class TestNetboxAPI():
     def prepared_api(self):
         return NetboxAPI(self.url)
 
+    def test_build_model_route(self, prepared_api):
+        app = "test_app"
+        model = "test_model"
+
+        model_route = prepared_api.build_model_route(app, model).rstrip("/")
+        expected_route = "api/{}/{}".format(app, model).rstrip("/")
+        assert model_route == expected_route
+
     def test_build_model_url(self, prepared_api):
         app = "test_app"
         model = "test_model"
@@ -51,11 +59,12 @@ class TestNetboxAPI():
         app = "test_app"
         model = "test_model"
         url = prepared_api.build_model_url("test_app", "test_model")
+        route = prepared_api.build_model_route("test_app", "test_model")
 
         expected_json = {"id": 1, "name": "test"}
         with requests_mock.Mocker() as m:
             m.register_uri(method, url, json=expected_json)
-            response = getattr(prepared_api, method)(url)
+            response = getattr(prepared_api, method)(route)
         assert response == expected_json
 
 

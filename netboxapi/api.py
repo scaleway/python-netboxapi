@@ -25,53 +25,57 @@ class NetboxAPI():
         self.username = username
         self.password = password
         self.token = token
-        self.url = url.rstrip('/')
+        self.url = url.rstrip("/")
 
         self.session = requests.Session()
 
-    def get(self, url, **kwargs):
+    def get(self, route, **kwargs):
         return self._generic_http_method_request(
-            "get", url, **kwargs
+            "get", route, **kwargs
         )
 
-    def post(self, url, **kwargs):
+    def post(self, route, **kwargs):
         return self._generic_http_method_request(
-            "post", url, **kwargs
+            "post", route, **kwargs
         )
 
-    def put(self, url, **kwargs):
+    def put(self, route, **kwargs):
         return self._generic_http_method_request(
-            "put", url, **kwargs
+            "put", route, **kwargs
         )
 
-    def patch(self, url, **kwargs):
+    def patch(self, route, **kwargs):
         return self._generic_http_method_request(
-            "patch", url, **kwargs
+            "patch", route, **kwargs
         )
 
-    def delete(self, url, **kwargs):
+    def delete(self, route, **kwargs):
         return self._generic_http_method_request(
-            "delete", url, **kwargs
+            "delete", route, **kwargs
         )
 
-    def _generic_http_method_request(self, method, url, **kwargs):
+    def _generic_http_method_request(self, method, route, **kwargs):
         http_method = getattr(self.session, method)
+        req_url = urljoin(self.url, route.lstrip("/"))
 
         if self.username and self.password:
             response = http_method(
-                url, auth=(self.username, self.password), **kwargs
+                req_url, auth=(self.username, self.password), **kwargs
             )
         elif self.token:
             response = http_method(
-                url, auth=_HTTPTokenAuth(self.token), **kwargs
+                req_url, auth=_HTTPTokenAuth(self.token), **kwargs
             )
         else:
-            response = http_method(url, **kwargs)
+            response = http_method(req_url, **kwargs)
 
         return self._handle_json_response(response)
 
     def build_model_url(self, app_name, model):
-        return urljoin(self.url, "api/{}/{}/".format(app_name, model))
+        return urljoin(self.url, self.build_model_route(app_name, model))
+
+    def build_model_route(self, app_name, model):
+        return "api/{}/{}/".format(app_name, model)
 
     def _handle_json_response(self, response):
         response.raise_for_status()

@@ -16,7 +16,7 @@ class TestNetboxMapper():
         return NetboxMapper(self.api, self.test_app_name, self.test_model)
 
     def test_get(self, mapper):
-        url = mapper._url
+        url = self.get_mapper_url(mapper)
         expected_attr = {"id": 1, "name": "test"}
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json=expected_attr)
@@ -26,7 +26,7 @@ class TestNetboxMapper():
             assert getattr(child_mapper, key) == val
 
     def test_get_submodel(self, mapper):
-        url = mapper._url
+        url = self.get_mapper_url(mapper)
         expected_attr = {"id": 1, "name": "first_model"}
 
         with requests_mock.Mocker() as m:
@@ -37,3 +37,6 @@ class TestNetboxMapper():
 
         for key, val in expected_attr.items():
             assert getattr(submodel_mapper, key) == val
+
+    def get_mapper_url(self, mapper):
+        return mapper.netbox_api.build_model_url(mapper.app_name, mapper.model)
