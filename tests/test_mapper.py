@@ -33,7 +33,7 @@ class TestNetboxMapper():
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json={"id": 1, })
             parent_mapper = next(mapper.get())
-            m.register_uri("get", url + "submodel", json=expected_attr)
+            m.register_uri("get", url + "submodel/", json=expected_attr)
             submodel_mapper = next(parent_mapper.get("submodel"))
 
         for key, val in expected_attr.items():
@@ -57,7 +57,7 @@ class TestNetboxMapper():
     def test_delete(self, mapper):
         url = self.get_mapper_url(mapper)
         with requests_mock.Mocker() as m:
-            m.register_uri("delete", url + "1")
+            m.register_uri("delete", url + "1/")
             req = mapper.delete(1)
 
         assert req.status_code == 200
@@ -67,7 +67,7 @@ class TestNetboxMapper():
             mapper.delete()
 
     def test_delete_from_child(self, mapper):
-        url = self.get_mapper_url(mapper) + "1"
+        url = self.get_mapper_url(mapper) + "1/"
 
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json={"id": 1, })
@@ -80,7 +80,7 @@ class TestNetboxMapper():
         assert response.status_code == 200
 
     def test_delete_other_id_from_child(self, mapper):
-        url = self.get_mapper_url(mapper) + "1"
+        url = self.get_mapper_url(mapper) + "1/"
 
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json={"id": 1, })

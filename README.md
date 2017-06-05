@@ -43,7 +43,7 @@ netbox_api = NetboxAPI(
 Then use multiple available methods to interact with the api:
 
 ```python
->>> netbox_api.get("api/dcim/sites/1/racks")
+>>> netbox_api.get("api/dcim/sites/1/racks/")
 {
     "id": 1,
     "name": "Some rack",

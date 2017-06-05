@@ -14,7 +14,7 @@ class NetboxMapper():
             self.netbox_api.build_model_route(
                 self.__app_name__, self.__model__
             )
-        )
+        ).rstrip("/") + "/"
 
     def get(self, *args, **kwargs):
         """
@@ -31,7 +31,10 @@ class NetboxMapper():
 
             Will do a request to "/api/dcim/sites/1/racks/?q=name_to_filter"
         """
-        route = self._route + "/".join(str(a) for a in args)
+        if args:
+            route = self._route + "/".join(str(a) for a in args) + "/"
+        else:
+            route = self._route
 
         new_mappers_dict = self.netbox_api.get(route, data=kwargs)
         if isinstance(new_mappers_dict, dict):
@@ -41,7 +44,7 @@ class NetboxMapper():
 
     def post(self, **json):
         new_mapper_dict = self.netbox_api.post(self._route, json=json)
-        route = self._route + "/{}".format(new_mapper_dict["id"])
+        route = self._route + "{}/".format(new_mapper_dict["id"])
 
         return self._build_new_mapper_from(new_mapper_dict, route)
 
@@ -63,7 +66,7 @@ class NetboxMapper():
         elif not id and not getattr(self, "id", None):
             raise ValueError("Delete needs an id when self.id doesn't exist")
 
-        delete_route = self._route + "/{}".format(id) if id else self._route
+        delete_route = self._route + "{}/".format(id) if id else self._route
         return self.netbox_api.delete(delete_route)
 
     def _build_new_mapper_from(self, mapper_attributes, new_route):
