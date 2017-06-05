@@ -90,4 +90,6 @@ class TestNetboxMapper():
             obj_mapper.delete(1)
 
     def get_mapper_url(self, mapper):
-        return mapper.netbox_api.build_model_url(mapper.app_name, mapper.model)
+        return mapper.netbox_api.build_model_url(
+            mapper.__app_name__, mapper.__model__
+        )
