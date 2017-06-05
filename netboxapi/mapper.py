@@ -1,5 +1,6 @@
 
 from .api import NetboxAPI
+from .exceptions import ForbiddenAsChildError
 
 
 class NetboxMapper():
@@ -35,6 +36,27 @@ class NetboxMapper():
             new_mappers_dict = [new_mappers_dict]
         for d in new_mappers_dict:
             yield self._build_new_mapper_from(d, route)
+
+    def delete(self, id=None):
+        """
+        Delete netbox object or self
+
+        :param id: id to delete. Only root mappers can delete any id, so if
+            self has already an id, it will be considered as a child (a single
+            object in netbox) and will not be able to delete other ID than
+            itself. In this case, specifying an ID will conflict and raise a
+            ForbiddenAsChildError
+        """
+        if id and getattr(self, "id", None):
+            raise ForbiddenAsChildError(
+                "Cannot specify an ID to delete when self is a mapper child "
+                "and has an ID"
+            )
+        elif not id and not getattr(self, "id", None):
+            raise ValueError("Delete needs an id when self.id doesn't exist")
+
+        delete_route = self._route + "/{}".format(id) if id else self._route
+        return self.netbox_api.delete(delete_route)
 
     def _build_new_mapper_from(self, mapper_attributes, new_route):
         mapper = type(self)(

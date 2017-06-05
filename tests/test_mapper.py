@@ -3,6 +3,7 @@ import pytest
 import requests_mock
 
 from netboxapi import NetboxMapper, NetboxAPI
+from netboxapi.exceptions import ForbiddenAsChildError
 
 
 class TestNetboxMapper():
@@ -37,6 +38,41 @@ class TestNetboxMapper():
 
         for key, val in expected_attr.items():
             assert getattr(submodel_mapper, key) == val
+
+    def test_delete(self, mapper):
+        url = self.get_mapper_url(mapper)
+        with requests_mock.Mocker() as m:
+            m.register_uri("delete", url + "1")
+            req = mapper.delete(1)
+
+        assert req.status_code == 200
+
+    def test_delete_without_id(self, mapper):
+        with pytest.raises(ValueError):
+            mapper.delete()
+
+    def test_delete_from_child(self, mapper):
+        url = self.get_mapper_url(mapper) + "1"
+
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json={"id": 1, })
+            obj_mapper = next(mapper.get(1))
+
+        with requests_mock.Mocker() as m:
+            m.register_uri("delete", url)
+            response = obj_mapper.delete()
+
+        assert response.status_code == 200
+
+    def test_delete_other_id_from_child(self, mapper):
+        url = self.get_mapper_url(mapper) + "1"
+
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json={"id": 1, })
+            obj_mapper = next(mapper.get(1))
+
+        with pytest.raises(ForbiddenAsChildError):
+            obj_mapper.delete(1)
 
     def get_mapper_url(self, mapper):
         return mapper.netbox_api.build_model_url(mapper.app_name, mapper.model)

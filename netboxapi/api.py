@@ -30,26 +30,44 @@ class NetboxAPI():
         self.session = requests.Session()
 
     def get(self, route, **kwargs):
-        return self._generic_http_method_request(
-            "get", route, **kwargs
-        )
+        """
+        :returns results: answer, as an unpacked json
+        """
+        response = self._generic_http_method_request("get", route, **kwargs)
+        return self._handle_json_response(response)
 
     def post(self, route, **kwargs):
-        return self._generic_http_method_request(
+        """
+        :returns added_object: new added object, as an unpacked json
+        """
+        response = self._generic_http_method_request(
             "post", route, **kwargs
         )
+        return self._handle_json_response(response)
 
     def put(self, route, **kwargs):
+        """
+        :returns req_answer: answer as a requests object (as `put` does not
+            return any data)
+        """
         return self._generic_http_method_request(
             "put", route, **kwargs
         )
 
     def patch(self, route, **kwargs):
-        return self._generic_http_method_request(
+        """
+        :returns updated_object: updated object, as an unpacked json
+        """
+        response = self._generic_http_method_request(
             "patch", route, **kwargs
         )
+        return self._handle_json_response(response)
 
     def delete(self, route, **kwargs):
+        """
+        :returns req_answer: answer as a requests object (as `delete` does not
+            return any data)
+        """
         return self._generic_http_method_request(
             "delete", route, **kwargs
         )
@@ -69,7 +87,8 @@ class NetboxAPI():
         else:
             response = http_method(req_url, **kwargs)
 
-        return self._handle_json_response(response)
+        response.raise_for_status()
+        return response
 
     def build_model_url(self, app_name, model):
         return urljoin(self.url, self.build_model_route(app_name, model))
@@ -78,6 +97,5 @@ class NetboxAPI():
         return "api/{}/{}/".format(app_name, model)
 
     def _handle_json_response(self, response):
-        response.raise_for_status()
         json_response = response.json()
         return json_response

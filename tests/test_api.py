@@ -41,19 +41,33 @@ class TestNetboxAPI():
 
     def test_get_loggedin_token(self, **kwargs):
         prepared_api = NetboxAPI(self.url, token=self.token)
-        self._generic_test_http_method_request(prepared_api, "get")
+        self._generic_test_http_method_json(prepared_api, "get")
 
     def test_post(self, prepared_api, **kwargs):
-        self._generic_test_http_method_request(prepared_api, "post")
+        self._generic_test_http_method_json(prepared_api, "post")
 
     def test_put(self, prepared_api, **kwargs):
-        self._generic_test_http_method_request(prepared_api, "put")
+        self._generic_test_http_method(prepared_api, "put")
 
     def test_patch(self, prepared_api, **kwargs):
-        self._generic_test_http_method_request(prepared_api, "patch")
+        self._generic_test_http_method_json(prepared_api, "patch")
 
     def test_delete(self, prepared_api, **kwargs):
-        self._generic_test_http_method_request(prepared_api, "delete")
+        self._generic_test_http_method(prepared_api, "delete")
+
+    def _generic_test_http_method_json(self, prepared_api, method):
+        response, expected_json = self._generic_test_http_method_request(
+            prepared_api, method
+        )
+
+        assert response == expected_json
+
+    def _generic_test_http_method(self, prepared_api, method):
+        response, _ = self._generic_test_http_method_request(
+            prepared_api, method
+        )
+
+        assert response.status_code == 200
 
     def _generic_test_http_method_request(self, prepared_api, method):
         app = "test_app"
@@ -65,7 +79,8 @@ class TestNetboxAPI():
         with requests_mock.Mocker() as m:
             m.register_uri(method, url, json=expected_json)
             response = getattr(prepared_api, method)(route)
-        assert response == expected_json
+
+        return response, expected_json
 
 
 class TestHTTPTokenAuth():

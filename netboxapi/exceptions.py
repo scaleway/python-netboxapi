@@ -1,0 +1,4 @@
+
+
+class ForbiddenAsChildError(Exception):
+    pass
