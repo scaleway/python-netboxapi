@@ -37,6 +37,12 @@ class NetboxMapper():
         for d in new_mappers_dict:
             yield self._build_new_mapper_from(d, route)
 
+    def post(self, **json):
+        new_mapper_dict = self.netbox_api.post(self._route, json=json)
+        route = self._route + "/{}".format(new_mapper_dict["id"])
+
+        return self._build_new_mapper_from(new_mapper_dict, route)
+
     def delete(self, id=None):
         """
         Delete netbox object or self

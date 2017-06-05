@@ -39,6 +39,21 @@ class TestNetboxMapper():
         for key, val in expected_attr.items():
             assert getattr(submodel_mapper, key) == val
 
+    def test_post(self, mapper):
+        def json_callback(request, context):
+            json = request.json()
+            json["id"] = 1
+            return json
+
+        url = self.get_mapper_url(mapper)
+
+        with requests_mock.Mocker() as m:
+            received_req = m.register_uri("post", url, json=json_callback)
+            child_mapper = mapper.post(name="testname")
+
+        assert child_mapper.id == 1
+        assert child_mapper.name == "testname"
+
     def test_delete(self, mapper):
         url = self.get_mapper_url(mapper)
         with requests_mock.Mocker() as m:
