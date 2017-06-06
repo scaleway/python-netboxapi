@@ -25,7 +25,7 @@ class NetboxMapper():
         and kwargs are use as data parameter. It is then used to build the
         request uri
 
-        Examples:
+        Example:
             >>> netbox_mapper.__app_name__ = "dcim"
             >>> netbox_mapper.__model__ = "sites"
             >>> netbox_mapper.get("1", "racks", q="name_to_filter")
@@ -44,12 +44,45 @@ class NetboxMapper():
             yield self._build_new_mapper_from(d, route)
 
     def post(self, **json):
+        """
+        Post a new netbox object
+
+        Use **json to build a json that will be used to package the new object
+        atributes. Meant to be use for a "root mapper" (a mapper not directly
+        linked to a resource, parent of children mappers).
+
+        Example:
+            >>> netbox_mapper.__app_name__ = "dcim"
+            >>> netbox_mapper.__model__ = "console-ports"
+            >>> netbox_mapper.post(device="A device", cs_port="cs port",
+            ...                    name="example")
+            <child_mapper>
+
+        :returns: child_mapper: Mapper containing the created object
+        """
         new_mapper_dict = self.netbox_api.post(self._route, json=json)
         route = self._route + "{}/".format(new_mapper_dict["id"])
 
         return self._build_new_mapper_from(new_mapper_dict, route)
 
     def put(self):
+        """
+        Update an already existing netbox object
+
+        Use all mapper attributes contained in self.__upstream_attrs__ to build
+        a json and send a put request to netbox.
+
+        Example:
+            >>> netbox_mapper.__app_name__ = "dcim"
+            >>> netbox_mapper.__model__ = "console-ports"
+            >>> child_mapper = netbox_mapper.get(1)
+            >>> child_mapper.name = "another name"
+            >>> child_mapper.put()
+
+        :returns request: As netbox does not return any data when updating an
+                          object, returns the answer request as a `requests`
+                          object.
+        """
         assert getattr(self, "id", None) is not None, "self.id does not exist"
 
         return self.netbox_api.put(self._route, json=self.to_dict())
@@ -60,6 +93,18 @@ class NetboxMapper():
     def delete(self, id=None):
         """
         Delete netbox object or self
+
+        Example:
+            >>> netbox_mapper.__app_name__ = "dcim"
+            >>> netbox_mapper.__model__ = "sites"
+            >>> netbox_mapper.delete(1)
+
+            Will delete the `Site` object with `id=1`. It is the same as doing:
+
+            >>> netbox_mapper.__app_name__ = "dcim"
+            >>> netbox_mapper.__model__ = "sites"
+            >>> child_mapper = netbox_mapper.get(1)
+            >>> child_mapper.delete()
 
         :param id: id to delete. Only root mappers can delete any id, so if
             self has already an id, it will be considered as a child (a single
