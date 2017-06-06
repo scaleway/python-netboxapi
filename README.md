@@ -49,6 +49,27 @@ Then use multiple available methods to interact with the api:
     "name": "Some rack",
     …
 }
+
+>>> netbox_api.post("api/dcim/device-roles/", json={"name": "test", …},)
+{
+    "id": 1,
+    "name": "test",
+    …
+}
+
+>>> netbox_api.patch("api/dcim/device-roles/", json={"slug": "test"},)
+{
+    "id": 1,
+    "name": "test",
+    "slug": "test",
+    …
+}
+
+>>> netbox_api.put("api/dcim/device-roles/1/", json={"name": "test", …},)
+<requests>
+
+>>> netbox_api.delete("api/dcim/sites/1/")
+<requests>
 ```
 
 Netbox Mapper
@@ -71,6 +92,8 @@ netbox_api = NetboxAPI(
 netbox_mapper = NetboxMapper(netbox_api, app_name="dcim", model="sites")
 ```
 
+### GET
+
 Then get all objects of the model:
 
 ```python
@@ -89,6 +112,63 @@ Or get a specific site by its id:
 >>> netbox_mapper.get(1)
 ```
 
+It is possible to get a subresourses of an object, and/or specify a query:
+
+```python
+>>> netbox_mapper.get("1", "racks", q="name_to_filter")
+```
+
+Any `kwargs` (here `q=`) is used as a GET parameter for the request.
+
+### POST
+
+Use the `kwargs` of a mapper to send a post request and create a new object:
+
+```python
+>>> netbox_mapper.post(name="A site", slug="a_site", region="Some region")
+<NetboxMapper>  # corresponding to the new created object
+```
+
+### PUT
+
+Use `put()` in a child mapper to update the resource upstream by reflecting
+the changes made in the object attributes:
+
+```python
+>>> child_mapper = netbox_mapper.get(1)
+>>> child_mapper.name = "another name"
+>>> child_mapper.put()
+<requests>  # requests object containing the netbox response
+```
+
+### PATCH
+
+`PATCH` is not supported in mappers, as it does not make really sense (to me)
+with the mapper logic.
+
+### DELETE
+
+Delete an object upstream by calling `delete()`:
+
+```python
+>>> netbox_mapper.delete(1)
+<requests>  # requests object containing the netbox response
+
+# OR
+
+>>> child_mapper = netbox_mapper.get(1)
+>>> child_mapper.delete()
+<requests>  # requests object containing the netbox response
+```
+
+But trying to delete another object of the same model from a child mapper is
+not possible:
+
+```python
+>>> child_mapper = netbox_mapper.get(1)
+>>> child_mapper.delete(2)
+Exception ForbiddenAsChildError
+```
 
 Dependencies
 ------------
