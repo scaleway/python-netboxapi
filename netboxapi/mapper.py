@@ -8,6 +8,7 @@ class NetboxMapper():
         self.netbox_api = netbox_api
         self.__app_name__ = app_name
         self.__model__ = model
+        self.__upstream_attrs__ = []
 
         self._route = (
             route or
@@ -48,6 +49,14 @@ class NetboxMapper():
 
         return self._build_new_mapper_from(new_mapper_dict, route)
 
+    def put(self):
+        assert getattr(self, "id", None) is not None, "self.id does not exist"
+
+        return self.netbox_api.put(self._route, json=self.to_dict())
+
+    def to_dict(self):
+        return {a: getattr(self, a, None) for a in self.__upstream_attrs__}
+
     def delete(self, id=None):
         """
         Delete netbox object or self
@@ -58,13 +67,13 @@ class NetboxMapper():
             itself. In this case, specifying an ID will conflict and raise a
             ForbiddenAsChildError
         """
-        if id and getattr(self, "id", None):
+        if id is not None and getattr(self, "id", None) is not None:
             raise ForbiddenAsChildError(
                 "Cannot specify an ID to delete when self is a mapper child "
                 "and has an ID"
             )
-        elif not id and not getattr(self, "id", None):
-            raise ValueError("Delete needs an id when self.id doesn't exist")
+        elif id is None and getattr(self, "id", None) is None:
+            raise ValueError("Delete needs an id when self.id does not exist")
 
         delete_route = self._route + "{}/".format(id) if id else self._route
         return self.netbox_api.delete(delete_route)
@@ -73,6 +82,7 @@ class NetboxMapper():
         mapper = type(self)(
             self.netbox_api, self.__app_name__, self.__model__, new_route
         )
+        mapper.__upstream_attrs__ = list(mapper_attributes.keys())
         for attr, val in mapper_attributes.items():
             setattr(mapper, attr, val)
 

@@ -54,6 +54,29 @@ class TestNetboxMapper():
         assert child_mapper.id == 1
         assert child_mapper.name == "testname"
 
+    def test_put(self, mapper):
+        def text_callback(request, context):
+            json = request.json()
+            assert json["name"] == "another testname"
+            context.status_code = 200
+            return ""
+
+        child_mapper = self.get_child_mapper(mapper)
+        url = self.get_mapper_url(child_mapper)
+        with requests_mock.Mocker() as m:
+            received_req = m.register_uri("put", url, text=text_callback)
+            child_mapper.name = "another testname"
+            child_mapper.put()
+
+    def get_child_mapper(self, mapper):
+        url = self.get_mapper_url(mapper)
+        expected_attr = {"id": 1, "name": "test"}
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
+            child_mapper = next(mapper.get())
+
+        return child_mapper
+
     def test_delete(self, mapper):
         url = self.get_mapper_url(mapper)
         with requests_mock.Mocker() as m:
