@@ -1,6 +1,6 @@
 
+import re
 import requests
-from urllib.parse import urljoin
 
 
 class _HTTPTokenAuth(requests.auth.AuthBase):
@@ -25,7 +25,11 @@ class NetboxAPI():
         self.username = username
         self.password = password
         self.token = token
-        self.url = url.rstrip("/")
+
+        if re.match("^.*://", url):
+            self.url = url.rstrip("/")
+        else:
+            self.url = "http://{}".format(url.rstrip("/"))
 
         self.session = requests.Session()
 
@@ -74,8 +78,7 @@ class NetboxAPI():
 
     def _generic_http_method_request(self, method, route, **kwargs):
         http_method = getattr(self.session, method)
-        req_url = urljoin(self.url, route.lstrip("/"))
-
+        req_url = "{}/{}".format(self.url.rstrip("/"), route.lstrip("/"))
         if self.username and self.password:
             response = http_method(
                 req_url, auth=(self.username, self.password), **kwargs
@@ -91,7 +94,10 @@ class NetboxAPI():
         return response
 
     def build_model_url(self, app_name, model):
-        return urljoin(self.url, self.build_model_route(app_name, model))
+        return "{}/{}".format(
+            self.url.rstrip("/"),
+            self.build_model_route(app_name, model).lstrip("/")
+        )
 
     def build_model_route(self, app_name, model):
         return "api/{}/{}/".format(app_name, model)
