@@ -16,6 +16,12 @@ class TestNetboxAPI():
     def prepared_api(self):
         return NetboxAPI(self.url)
 
+    def test_url_sanitizer(self):
+        complete_schema_url_netbox_api = NetboxAPI("http://test/api").url
+        no_schema_url_netbox_api = NetboxAPI("test/api/").url
+
+        assert complete_schema_url_netbox_api == no_schema_url_netbox_api
+
     def test_build_model_route(self, prepared_api):
         app = "test_app"
         model = "test_model"
