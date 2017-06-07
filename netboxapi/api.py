@@ -100,7 +100,7 @@ class NetboxAPI():
         )
 
     def build_model_route(self, app_name, model):
-        return "api/{}/{}/".format(app_name, model)
+        return "{}/{}/".format(app_name, model)
 
     def _handle_json_response(self, response):
         json_response = response.json()

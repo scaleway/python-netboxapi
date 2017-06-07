@@ -7,7 +7,7 @@ from netboxapi.exceptions import ForbiddenAsChildError
 
 
 class TestNetboxMapper():
-    url = "http://localhost/"
+    url = "http://localhost/api"
     api = NetboxAPI(url)
     test_app_name = "test_app_name"
     test_model = "test_model"

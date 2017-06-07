@@ -30,7 +30,7 @@ class NetboxMapper():
             >>> netbox_mapper.__model__ = "sites"
             >>> netbox_mapper.get("1", "racks", q="name_to_filter")
 
-            Will do a request to "/api/dcim/sites/1/racks/?q=name_to_filter"
+            Will do a request to "/dcim/sites/1/racks/?q=name_to_filter"
         """
         if args:
             route = self._route + "/".join(str(a) for a in args) + "/"

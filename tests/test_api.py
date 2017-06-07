@@ -7,7 +7,7 @@ from netboxapi.api import _HTTPTokenAuth
 
 
 class TestNetboxAPI():
-    url = "http://localhost/"
+    url = "http://localhost/api"
     login = "login"
     password = "password"
     token = "testing_token"
@@ -21,7 +21,7 @@ class TestNetboxAPI():
         model = "test_model"
 
         model_route = prepared_api.build_model_route(app, model).rstrip("/")
-        expected_route = "api/{}/{}".format(app, model).rstrip("/")
+        expected_route = "{}/{}".format(app, model).rstrip("/")
         assert model_route == expected_route
 
     def test_build_model_url(self, prepared_api):
@@ -29,7 +29,7 @@ class TestNetboxAPI():
         model = "test_model"
 
         model_url = prepared_api.build_model_url(app, model).rstrip("/")
-        expected_url = self.url + "api/{}/{}".format(app, model).rstrip("/")
+        expected_url = self.url + "/{}/{}".format(app, model).rstrip("/")
         assert model_url == expected_url
 
     def test_get(self, prepared_api, **kwargs):
