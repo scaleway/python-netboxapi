@@ -43,29 +43,21 @@ netbox_api = NetboxAPI(
 Then use multiple available methods to interact with the api:
 
 ```python
->>> netbox_api.get("api/dcim/sites/1/racks/")
+>>> netbox_api.get("dcim/sites/1/racks/")
 {
     "id": 1,
     "name": "Some rack",
     …
 }
 
->>> netbox_api.post("api/dcim/device-roles/", json={"name": "test", …},)
+>>> netbox_api.post("dcim/device-roles/", json={"name": "test", …},)
 {
     "id": 1,
     "name": "test",
     …
 }
 
->>> netbox_api.patch("api/dcim/device-roles/", json={"slug": "test"},)
-{
-    "id": 1,
-    "name": "test",
-    "slug": "test",
-    …
-}
-
->>> netbox_api.put("api/dcim/device-roles/1/", json={"name": "test", …},)
+>>> netbox_api.patch("dcim/device-roles/", json={"slug": "test"},)
 {
     "id": 1,
     "name": "test",
@@ -73,7 +65,15 @@ Then use multiple available methods to interact with the api:
     …
 }
 
->>> netbox_api.delete("api/dcim/sites/1/")
+>>> netbox_api.put("dcim/device-roles/1/", json={"name": "test", …},)
+{
+    "id": 1,
+    "name": "test",
+    "slug": "test",
+    …
+}
+
+>>> netbox_api.delete("dcim/sites/1/")
 <<Response [204]>>
 ```
 
