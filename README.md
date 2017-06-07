@@ -66,10 +66,15 @@ Then use multiple available methods to interact with the api:
 }
 
 >>> netbox_api.put("api/dcim/device-roles/1/", json={"name": "test", …},)
-<requests>
+{
+    "id": 1,
+    "name": "test",
+    "slug": "test",
+    …
+}
 
 >>> netbox_api.delete("api/dcim/sites/1/")
-<requests>
+<<Response [204]>>
 ```
 
 Netbox Mapper
@@ -138,7 +143,7 @@ the changes made in the object attributes:
 >>> child_mapper = netbox_mapper.get(1)
 >>> child_mapper.name = "another name"
 >>> child_mapper.put()
-<requests>  # requests object containing the netbox response
+<NetboxMapper>  # corresponding to the updated object
 ```
 
 ### PATCH

@@ -40,33 +40,33 @@ class TestNetboxMapper():
             assert getattr(submodel_mapper, key) == val
 
     def test_post(self, mapper):
-        def json_callback(request, context):
-            json = request.json()
-            json["id"] = 1
-            return json
-
         url = self.get_mapper_url(mapper)
 
         with requests_mock.Mocker() as m:
-            received_req = m.register_uri("post", url, json=json_callback)
+            received_req = m.register_uri(
+                "post", url, json=self.update_or_create_resource_json_callback
+            )
             child_mapper = mapper.post(name="testname")
 
         assert child_mapper.id == 1
         assert child_mapper.name == "testname"
 
     def test_put(self, mapper):
-        def text_callback(request, context):
-            json = request.json()
-            assert json["name"] == "another testname"
-            context.status_code = 200
-            return ""
-
         child_mapper = self.get_child_mapper(mapper)
         url = self.get_mapper_url(child_mapper)
         with requests_mock.Mocker() as m:
-            received_req = m.register_uri("put", url, text=text_callback)
+            received_req = m.register_uri(
+                "put", url, json=self.update_or_create_resource_json_callback
+            )
             child_mapper.name = "another testname"
-            child_mapper.put()
+            updated_child_mapper = child_mapper.put()
+
+        assert updated_child_mapper.name == "another testname"
+
+    def update_or_create_resource_json_callback(self, request, context):
+        json = request.json()
+        json["id"] = 1
+        return json
 
     def get_child_mapper(self, mapper):
         url = self.get_mapper_url(mapper)

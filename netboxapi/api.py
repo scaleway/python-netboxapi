@@ -51,12 +51,12 @@ class NetboxAPI():
 
     def put(self, route, **kwargs):
         """
-        :returns req_answer: answer as a requests object (as `put` does not
-            return any data)
+        :returns updated_object: updated object, as an unpacked json
         """
-        return self._generic_http_method_request(
+        response = self._generic_http_method_request(
             "put", route, **kwargs
         )
+        return self._handle_json_response(response)
 
     def patch(self, route, **kwargs):
         """

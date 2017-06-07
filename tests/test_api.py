@@ -47,7 +47,7 @@ class TestNetboxAPI():
         self._generic_test_http_method_json(prepared_api, "post")
 
     def test_put(self, prepared_api, **kwargs):
-        self._generic_test_http_method(prepared_api, "put")
+        self._generic_test_http_method_json(prepared_api, "put")
 
     def test_patch(self, prepared_api, **kwargs):
         self._generic_test_http_method_json(prepared_api, "patch")

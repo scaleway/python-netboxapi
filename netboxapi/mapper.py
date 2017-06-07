@@ -78,14 +78,14 @@ class NetboxMapper():
             >>> child_mapper = netbox_mapper.get(1)
             >>> child_mapper.name = "another name"
             >>> child_mapper.put()
+            <child_mapper>
 
-        :returns request: As netbox does not return any data when updating an
-                          object, returns the answer request as a `requests`
-                          object.
+        :returns: child_mapper: Mapper containing the updated object
         """
         assert getattr(self, "id", None) is not None, "self.id does not exist"
 
-        return self.netbox_api.put(self._route, json=self.to_dict())
+        new_mapper_dict = self.netbox_api.put(self._route, json=self.to_dict())
+        return self._build_new_mapper_from(new_mapper_dict, self._route)
 
     def to_dict(self):
         return {a: getattr(self, a, None) for a in self.__upstream_attrs__}
