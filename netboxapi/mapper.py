@@ -37,7 +37,7 @@ class NetboxMapper():
         else:
             route = self._route
 
-        new_mappers_dict = self.netbox_api.get(route, data=kwargs)
+        new_mappers_dict = self.netbox_api.get(route, params=kwargs)
         if "results" in new_mappers_dict:
             new_mappers_dict = new_mappers_dict["results"]
 
