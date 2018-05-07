@@ -37,11 +37,16 @@ class NetboxMapper():
         else:
             route = self._route
 
-        new_mappers_dict = self.netbox_api.get(route, data=kwargs)
+        new_mappers_dict = self.netbox_api.get(route, params=kwargs)
+        if "results" in new_mappers_dict:
+            new_mappers_dict = new_mappers_dict["results"]
+
         if isinstance(new_mappers_dict, dict):
             new_mappers_dict = [new_mappers_dict]
         for d in new_mappers_dict:
-            yield self._build_new_mapper_from(d, route)
+            yield self._build_new_mapper_from(
+                d, route + "{}/".format(d["id"])
+            )
 
     def post(self, **json):
         """

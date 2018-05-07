@@ -18,26 +18,51 @@ class TestNetboxMapper():
 
     def test_get(self, mapper):
         url = self.get_mapper_url(mapper)
-        expected_attr = {"id": 1, "name": "test"}
+        expected_attr = {
+            "count": 1, "next": None, "previous": None,
+            "results": [{"id": 1, "name": "test"}]
+        }
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json=expected_attr)
             child_mapper = next(mapper.get())
 
-        for key, val in expected_attr.items():
+        for key, val in expected_attr["results"][0].items():
             assert getattr(child_mapper, key) == val
 
     def test_get_submodel(self, mapper):
         url = self.get_mapper_url(mapper)
-        expected_attr = {"id": 1, "name": "first_model"}
+        expected_attr = {
+            "count": 1, "next": None, "previous": None,
+            "results": [{"id": 1, "name": "first_model"}]
+        }
 
         with requests_mock.Mocker() as m:
-            m.register_uri("get", url, json={"id": 1, })
+            m.register_uri(
+                "get", url,
+                json={
+                    "count": 1, "next": None, "previous": None,
+                    "results": [{"id": 1}]
+                }
+            )
             parent_mapper = next(mapper.get())
-            m.register_uri("get", url + "submodel/", json=expected_attr)
+            m.register_uri(
+                "get", url + "{}/{}/".format(parent_mapper.id, "submodel"),
+                json=expected_attr
+            )
             submodel_mapper = next(parent_mapper.get("submodel"))
 
-        for key, val in expected_attr.items():
+        for key, val in expected_attr["results"][0].items():
             assert getattr(submodel_mapper, key) == val
+
+    def test_get_query(self, mapper):
+        url = self.get_mapper_url(mapper) + "?name=test"
+        expected_attr = {
+            "count": 1, "next": None, "previous": None,
+            "results": [{"id": 1, "name": "test"}]
+        }
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
+            next(mapper.get(name="test"))
 
     def test_post(self, mapper):
         url = self.get_mapper_url(mapper)
@@ -53,7 +78,7 @@ class TestNetboxMapper():
 
     def test_put(self, mapper):
         child_mapper = self.get_child_mapper(mapper)
-        url = self.get_mapper_url(child_mapper)
+        url = self.get_mapper_url(child_mapper) + "{}/".format(child_mapper.id)
         with requests_mock.Mocker() as m:
             received_req = m.register_uri(
                 "put", url, json=self.update_or_create_resource_json_callback
@@ -70,7 +95,10 @@ class TestNetboxMapper():
 
     def get_child_mapper(self, mapper):
         url = self.get_mapper_url(mapper)
-        expected_attr = {"id": 1, "name": "test"}
+        expected_attr = {
+            "count": 1, "next": None, "previous": None,
+            "results": [{"id": 1, "name": "test"}]
+        }
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json=expected_attr)
             child_mapper = next(mapper.get())
@@ -93,11 +121,13 @@ class TestNetboxMapper():
         url = self.get_mapper_url(mapper) + "1/"
 
         with requests_mock.Mocker() as m:
-            m.register_uri("get", url, json={"id": 1, })
+            m.register_uri(
+                "get", url, json={"id": 1}
+            )
             obj_mapper = next(mapper.get(1))
 
         with requests_mock.Mocker() as m:
-            m.register_uri("delete", url)
+            m.register_uri("delete", url + "1/")
             response = obj_mapper.delete()
 
         assert response.status_code == 200
@@ -106,7 +136,9 @@ class TestNetboxMapper():
         url = self.get_mapper_url(mapper) + "1/"
 
         with requests_mock.Mocker() as m:
-            m.register_uri("get", url, json={"id": 1, })
+            m.register_uri(
+                "get", url, json={"id": 1}
+            )
             obj_mapper = next(mapper.get(1))
 
         with pytest.raises(ForbiddenAsChildError):
