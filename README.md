@@ -143,7 +143,7 @@ the changes made in the object attributes:
 >>> child_mapper = netbox_mapper.get(1)
 >>> child_mapper.name = "another name"
 >>> child_mapper.put()
-<NetboxMapper>  # corresponding to the updated object
+<requests>  # requests object containing the netbox response
 ```
 
 ### PATCH
