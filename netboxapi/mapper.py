@@ -181,10 +181,7 @@ class NetboxMapper():
     def _build_new_mapper_from(
             self, mapper_attributes, new_route, passive_mapper=False
     ):
-        if not passive_mapper:
-            cls = type(self)
-        else:
-            cls = NetboxPassiveMapper
+        cls = NetboxPassiveMapper if passive_mapper else type(self)
         mapper_class = type(
             "NetboxMapper_{}_{}".format(
                 re.sub("_|-", "", self.__model__.title()),
