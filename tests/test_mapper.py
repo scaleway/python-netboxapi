@@ -263,6 +263,39 @@ class TestNetboxMapper():
         req_json = received_req.last_request.json()
         assert isinstance(req_json["vrf"], int)
 
+    def test_put_with_null_foreign_key(self, mapper):
+        """
+        Test PUT with an object previously having a null foreign key
+        """
+        expected_attr = {
+            "id": 1, "name": "test", "vrf": None,
+        }
+        child_mapper = self._get_child_mapper_variable_attr(
+            mapper, expected_attr
+        )
+
+        vrf_mapper = NetboxMapper(self.api, "ipam", "vrfs")
+        child_vrf_mapper = self._get_child_mapper_variable_attr(
+            vrf_mapper, {
+                "count": 1, "next": None, "previous": None,
+                "results": [{"id": 1, "name": "test_vrf"}]
+            }
+        )
+
+        with requests_mock.Mocker() as m:
+            child_mapper_url = (
+                self.get_mapper_url(child_mapper) +
+                "{}/".format(child_mapper.id)
+            )
+            m.register_uri(
+                "put", child_mapper_url,
+                json=self.update_or_create_resource_json_callback
+            )
+            child_mapper.vrf = child_vrf_mapper
+            req_json = child_mapper.put()
+
+        assert req_json["vrf"] == child_vrf_mapper.id
+
     def get_child_mapper_foreign_key(self, mapper):
         expected_attr = {
             "id": 1, "name": "test",

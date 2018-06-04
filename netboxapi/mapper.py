@@ -126,15 +126,19 @@ class NetboxMapper():
 
     def to_dict(self):
         serialize = {}
+        foreign_keys = self.__foreign_keys__.copy()
         for a in self.__upstream_attrs__:
             val = getattr(self, a, None)
             if isinstance(val, dict):
                 if "value" in val and "label" in val:
                     val = val["value"]
+            elif isinstance(val, NetboxMapper):
+                foreign_keys.append(a)
+                continue
 
             serialize[a] = val
 
-        for fk in self.__foreign_keys__:
+        for fk in foreign_keys:
             attr = getattr(self, fk, None)
             try:
                 # check that attr is iterable
@@ -181,7 +185,7 @@ class NetboxMapper():
     def _build_new_mapper_from(
             self, mapper_attributes, new_route, passive_mapper=False
     ):
-        cls = NetboxPassiveMapper if passive_mapper else type(self)
+        cls = NetboxPassiveMapper if passive_mapper else NetboxMapper
         mapper_class = type(
             "NetboxMapper_{}_{}".format(
                 re.sub("_|-", "", self.__model__.title()),
