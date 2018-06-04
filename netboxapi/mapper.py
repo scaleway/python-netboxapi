@@ -140,6 +140,10 @@ class NetboxMapper():
 
         for fk in foreign_keys:
             attr = getattr(self, fk, None)
+            if isinstance(attr, int):
+                serialize[fk] = attr
+                continue
+
             try:
                 # check that attr is iterable
                 iter(attr)
@@ -212,6 +216,9 @@ class NetboxMapper():
 
     def _set_property_foreign_key(self, attr, value):
         def get_foreign_object(*args):
+            if hasattr(self, "_{}".format(attr)):
+                return getattr(self, "_{}".format(attr))
+
             if attr in self._fk_cache:
                 return self._fk_cache[attr]
 
@@ -230,11 +237,14 @@ class NetboxMapper():
             self._fk_cache[attr] = fk
             return fk
 
+        def setter(cls, value):
+            setattr(self, "_{}".format(attr), value)
+
         try:
             self._fk_cache.pop(attr)
         except KeyError:
             pass
-        setattr(type(self), attr, property(get_foreign_object))
+        setattr(type(self), attr, property(get_foreign_object, setter))
 
 
 class NetboxPassiveMapper(NetboxMapper):

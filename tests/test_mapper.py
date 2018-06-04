@@ -296,6 +296,28 @@ class TestNetboxMapper():
 
         assert req_json["vrf"] == child_vrf_mapper.id
 
+    def test_put_with_int_foreign_key(self, mapper):
+        """
+        Test PUT with an object having an id as foreign key, and not a mapper
+        """
+        child_mapper = self.get_child_mapper_foreign_key(mapper)
+        child_mapper.vrf = 2
+
+        with requests_mock.Mocker() as m:
+            child_mapper_url = (
+                self.get_mapper_url(child_mapper) +
+                "{}/".format(child_mapper.id)
+            )
+            received_req = m.register_uri(
+                "put", child_mapper_url,
+                json=self.update_or_create_resource_json_callback
+            )
+
+            child_mapper.put()
+
+        req_json = received_req.last_request.json()
+        assert req_json["vrf"] == 2
+
     def get_child_mapper_foreign_key(self, mapper):
         expected_attr = {
             "id": 1, "name": "test",
