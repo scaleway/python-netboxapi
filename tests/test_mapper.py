@@ -242,6 +242,20 @@ class TestNetboxMapper():
 
         assert received_req.last_request.json()["fk"] == 2
 
+    def test_post_foreign_key_broken_mapper(self, mapper):
+        url = self.get_mapper_url(mapper)
+
+        fk_mapper = NetboxMapper(mapper.netbox_api, "foo", "bar")
+
+        with requests_mock.Mocker() as m:
+            m.register_uri(
+                "post", url, json={
+                    "id": 1, "name": "testname", "fk": {"id": 2}
+                }
+            )
+            with pytest.raises(ValueError):
+                mapper.post(name="testname", fk=fk_mapper)
+
     def test_put(self, mapper):
         child_mapper = self.get_child_mapper(mapper)
         url = self.get_mapper_url(child_mapper) + "{}/".format(child_mapper.id)

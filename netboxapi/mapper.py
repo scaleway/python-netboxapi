@@ -88,7 +88,7 @@ class NetboxMapper():
             if isinstance(v, NetboxMapper):
                 try:
                     json[k] = v.id
-                except KeyError:
+                except AttributeError:
                     raise ValueError("Mapper {} has no id".format(k))
         new_mapper_dict = self.netbox_api.post(self._route, json=json)
         try:
