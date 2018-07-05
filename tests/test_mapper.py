@@ -214,6 +214,34 @@ class TestNetboxMapper():
         json["id"] = 1
         return json
 
+    def test_post_foreign_key(self, mapper):
+        url = self.get_mapper_url(mapper)
+
+        fk_mapper = NetboxMapper(mapper.netbox_api, "foo", "bar")
+        fk_mapper.id = 2
+
+        with requests_mock.Mocker() as m:
+            received_req = m.register_uri(
+                "post", url, json={
+                    "id": 1, "name": "testname", "fk": {"id": 2}
+                }
+            )
+            m.register_uri(
+                "get", url + "1/",
+                json={
+                    "count": 1, "next": None, "previous": None,
+                    "results": [{
+                        "id": 1, "name": "testname", "fk": {
+                            "id": 2,
+                            "url": self.get_mapper_url(fk_mapper) + "2/"
+                        }
+                    }]
+                }
+            )
+            mapper.post(name="testname", fk=fk_mapper)
+
+        assert received_req.last_request.json()["fk"] == 2
+
     def test_put(self, mapper):
         child_mapper = self.get_child_mapper(mapper)
         url = self.get_mapper_url(child_mapper) + "{}/".format(child_mapper.id)

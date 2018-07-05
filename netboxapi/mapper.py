@@ -84,6 +84,12 @@ class NetboxMapper():
 
         :returns: child_mapper: Mapper containing the created object
         """
+        for k, v in json.items():
+            if isinstance(v, NetboxMapper):
+                try:
+                    json[k] = v.id
+                except KeyError:
+                    raise ValueError("Mapper {} has no id".format(k))
         new_mapper_dict = self.netbox_api.post(self._route, json=json)
         try:
             return next(self.get(new_mapper_dict["id"]))
