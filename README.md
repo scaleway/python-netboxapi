@@ -125,6 +125,26 @@ It is possible to get a subresourses of an object, and/or specify a query:
 
 Any `kwargs` (here `q=`) is used as a GET parameter for the request.
 
+#### Foreign keys
+
+Foreign keys are handle automatically by the mapper.
+
+```python
+>>> site = next(netbox_mapper.get())
+>>> print(site.region.name)
+"Some region"
+```
+
+When accessing to `site.region`, a query will be done to fetch the foreign
+object. It will then be saved in cache to avoid unnecessary queries for next
+accesses.
+
+To refresh an object and its foreign keys, just do:
+
+```python
+>>> site = next(site.get())
+```
+
 ### POST
 
 Use the `kwargs` of a mapper to send a post request and create a new object:
@@ -133,6 +153,9 @@ Use the `kwargs` of a mapper to send a post request and create a new object:
 >>> netbox_mapper.post(name="A site", slug="a_site", region="Some region")
 <NetboxMapper>  # corresponding to the new created object
 ```
+
+If a mapper is sent as parameter, `post()` will automatically take its id.
+However, it will not update the foreign object.
 
 ### PUT
 
@@ -143,7 +166,7 @@ the changes made in the object attributes:
 >>> child_mapper = netbox_mapper.get(1)
 >>> child_mapper.name = "another name"
 >>> child_mapper.put()
-<NetboxMapper>  # corresponding to the updated object
+<requests>  # requests object containing the netbox response
 ```
 
 ### PATCH
