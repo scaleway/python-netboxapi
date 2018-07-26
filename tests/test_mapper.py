@@ -87,6 +87,34 @@ class TestNetboxMapper():
             m.register_uri("get", url, json=expected_attr)
             next(mapper.get())
 
+    def test_get_pagination(self, mapper):
+        url = self.get_mapper_url(mapper)
+        next_url = url + "?limit=50&offset=50"
+        nb_obj = 75
+        results = [
+            {"id": i, "name": "test{}".format(i)} for i in range(nb_obj)
+        ]
+
+        with requests_mock.Mocker() as m:
+            m.register_uri(
+                "get", url, json={
+                    "count": nb_obj, "next": next_url,
+                    "previous": None, "results": results[:50]
+                }
+            )
+            m.register_uri(
+                "get", next_url, json={
+                    "count": nb_obj,
+                    "previous": None, "results": results[50:]
+                }
+            )
+            received_list = tuple(mapper.get(limit=50))
+
+        assert len(results) == len(received_list)
+        for expected, received in zip(results, received_list):
+            assert expected["id"] == received.id
+            assert expected["name"] == received.name
+
     def test_get_submodel_with_choice(self, mapper):
         """
         Choices are enum handled by netbox. Try to get a model with it.

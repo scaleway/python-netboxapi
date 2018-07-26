@@ -27,7 +27,7 @@ class NetboxMapper():
             )
         ).rstrip("/") + "/"
 
-    def get(self, *args, **kwargs):
+    def get(self, *args, limit=50, **kwargs):
         """
         Get netbox objects
 
@@ -46,27 +46,46 @@ class NetboxMapper():
         example: `/ipam/prefixes/{id}/available-prefixes/`). In this case, no
         mapper will be built from the result and it will be yield as received.
         """
+        kwargs.setdefault("limit", limit)
+
         if args:
             route = self._route + "/".join(str(a) for a in args) + "/"
         else:
             route = self._route
 
-        response = self.netbox_api.get(route, params=kwargs)
-        new_mappers_props = (
-            response["results"] if "results" in response else response
-        )
-
-        if isinstance(new_mappers_props, dict):
-            new_mappers_props = [new_mappers_props]
+        new_mappers_props = self._iterate_over_get_query(route, kwargs)
         try:
-            for d in new_mappers_props:
+            for nm_prop in new_mappers_props:
                 yield self._build_new_mapper_from(
-                    d, self._route + "{}/".format(d["id"])
+                    nm_prop, self._route + "{}/".format(nm_prop["id"])
                 )
         except KeyError:
             # Result objects have no id, cannot build a mapper from them,
             # yield them as received
             yield from new_mappers_props
+
+    def _iterate_over_get_query(self, route, params):
+        """
+        Iterate over a get query and handle possible pagination
+        """
+        while True:
+            response = self.netbox_api.get(route, params=params)
+            if "results" in response:
+                new_mappers_props = response["results"]
+            else:
+                if isinstance(response, list):
+                    yield from response
+                else:
+                    yield response
+                return
+
+            yield from new_mappers_props
+
+            next_url = response.get("next")
+            if next_url:
+                params["offset"] = params.get("offset", 0) + params["limit"]
+            else:
+                return
 
     def post(self, **json):
         """
