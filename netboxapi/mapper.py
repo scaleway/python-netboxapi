@@ -51,21 +51,22 @@ class NetboxMapper():
         else:
             route = self._route
 
-        new_mappers_dict = self.netbox_api.get(route, params=kwargs)
-        if "results" in new_mappers_dict:
-            new_mappers_dict = new_mappers_dict["results"]
+        response = self.netbox_api.get(route, params=kwargs)
+        new_mappers_props = (
+            response["results"] if "results" in response else response
+        )
 
-        if isinstance(new_mappers_dict, dict):
-            new_mappers_dict = [new_mappers_dict]
+        if isinstance(new_mappers_props, dict):
+            new_mappers_props = [new_mappers_props]
         try:
-            for d in new_mappers_dict:
+            for d in new_mappers_props:
                 yield self._build_new_mapper_from(
                     d, self._route + "{}/".format(d["id"])
                 )
         except KeyError:
             # Result objects have no id, cannot build a mapper from them,
             # yield them as received
-            yield from new_mappers_dict
+            yield from new_mappers_props
 
     def post(self, **json):
         """
