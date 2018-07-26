@@ -47,6 +47,7 @@ class NetboxMapper():
         mapper will be built from the result and it will be yield as received.
         """
         kwargs.setdefault("limit", limit)
+        self._replace_params_mappers_by_id(kwargs)
 
         if args:
             route = self._route + "/".join(str(a) for a in args) + "/"
@@ -63,6 +64,19 @@ class NetboxMapper():
             # Result objects have no id, cannot build a mapper from them,
             # yield them as received
             yield from new_mappers_props
+
+    def _replace_params_mappers_by_id(self, params):
+        """
+        Find mappers in a dict and replace them by their id
+
+        Useful to send requests containing a mapper
+        """
+        for k, v in params.items():
+            if isinstance(v, NetboxMapper):
+                try:
+                    params[k] = v.id
+                except AttributeError:
+                    raise ValueError("Mapper {} has no id".format(k))
 
     def _iterate_over_get_query(self, route, params):
         """
@@ -104,12 +118,7 @@ class NetboxMapper():
 
         :returns: child_mapper: Mapper containing the created object
         """
-        for k, v in json.items():
-            if isinstance(v, NetboxMapper):
-                try:
-                    json[k] = v.id
-                except AttributeError:
-                    raise ValueError("Mapper {} has no id".format(k))
+        self._replace_params_mappers_by_id(json)
         new_mapper_dict = self.netbox_api.post(self._route, json=json)
         try:
             return next(self.get(new_mapper_dict["id"]))
