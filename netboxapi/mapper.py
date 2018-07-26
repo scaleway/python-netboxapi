@@ -60,7 +60,7 @@ class NetboxMapper():
         try:
             for d in new_mappers_dict:
                 yield self._build_new_mapper_from(
-                    d, route + "{}/".format(d["id"])
+                    d, self._route + "{}/".format(d["id"])
                 )
         except KeyError:
             # Result objects have no id, cannot build a mapper from them,

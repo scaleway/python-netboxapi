@@ -57,6 +57,16 @@ class TestNetboxMapper():
         for key, val in expected_attr["results"][0].items():
             assert getattr(submodel_mapper, key) == val
 
+    def test_get_id(self, mapper):
+        url = self.get_mapper_url(mapper) + "1/"
+        expected_attr = {"id": 1, "name": "test"}
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
+            obj = next(mapper.get(1))
+
+        assert obj.name == "test"
+        assert obj.id == 1
+
     def test_get_query(self, mapper):
         url = self.get_mapper_url(mapper) + "?name=test"
         expected_attr = {
@@ -416,7 +426,7 @@ class TestNetboxMapper():
             obj_mapper = next(mapper.get(1))
 
         with requests_mock.Mocker() as m:
-            m.register_uri("delete", url + "1/")
+            m.register_uri("delete", url)
             response = obj_mapper.delete()
 
         assert response.status_code == 200
