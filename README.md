@@ -125,6 +125,10 @@ It is possible to get a subresourses of an object, and/or specify a query:
 
 Any `kwargs` (here `q=`) is used as a GET parameter for the request.
 
+Pagination is transparently handled, but it is possible to specify how many
+items are wanted per page by setting the GET parameter `limit`, to limit
+the number of requests done to Netbox in case of long iterations.
+
 #### Foreign keys
 
 Foreign keys are handle automatically by the mapper.
