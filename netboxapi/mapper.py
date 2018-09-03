@@ -242,7 +242,7 @@ class NetboxMapper():
         mapper.__upstream_attrs__ = []
         mapper.__foreign_keys__ = []
         for attr, val in mapper_attributes.items():
-            if isinstance(val, dict) and "id" in val:
+            if isinstance(val, dict) and "id" in val and "url" in val:
                 mapper.__foreign_keys__.append(attr)
                 mapper._set_property_foreign_key(attr, val)
             else:
