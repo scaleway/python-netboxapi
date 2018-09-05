@@ -67,6 +67,18 @@ class TestNetboxMapper():
         assert obj.name == "test"
         assert obj.id == 1
 
+    def test_get_update_obj(self, mapper):
+        url = self.get_mapper_url(mapper) + "1/"
+        expected_attr = {"id": 1, "name": "test"}
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
+            obj = next(mapper.get(1))
+            obj_clone = next(obj.get())
+            obj_clone = next(obj_clone.get())
+
+        assert obj.name == obj_clone.name
+        assert obj.id == obj_clone.id
+
     def test_get_query(self, mapper):
         url = self.get_mapper_url(mapper) + "?name=test"
         expected_attr = {

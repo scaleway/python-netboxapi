@@ -57,9 +57,14 @@ class NetboxMapper():
         new_mappers_props = self._iterate_over_get_query(route, kwargs)
         for nm_prop in new_mappers_props:
             try:
-                yield self._build_new_mapper_from(
-                    nm_prop, self._route + "{}/".format(nm_prop["id"])
-                )
+                if getattr(self, "id", None) is not None:
+                    new_mapper_route = route
+                else:
+                    new_mapper_route = self._route + "{}/".format(
+                        nm_prop["id"]
+                    )
+
+                yield self._build_new_mapper_from(nm_prop, new_mapper_route)
             except (KeyError, TypeError):
                 # Result objects have no id, cannot build a mapper from them,
                 # yield them as received
