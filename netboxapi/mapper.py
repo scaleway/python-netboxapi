@@ -16,8 +16,9 @@ class NetboxMapper():
         self.__model__ = model
         self.__upstream_attrs__ = []
         self.__foreign_keys__ = []
+        self.__original_foreign_keys_id__ = {}
 
-        #: cache for foreign keys properties
+        #: cache for foreign keys properties.
         self._fk_cache = {}
 
         self._route = (
@@ -181,17 +182,12 @@ class NetboxMapper():
             serialize[a] = val
 
         for fk in foreign_keys:
-            attr = getattr(self, fk, None)
-            if isinstance(attr, int):
-                serialize[fk] = attr
-                continue
-
-            try:
-                # check that attr is iterable
-                iter(attr)
-                serialize[fk] = [getattr(i, "id", None) for i in attr]
-            except TypeError:
-                serialize[fk] = getattr(attr, "id", None)
+            if hasattr(self, "_{}_id".format(fk)):
+                serialize[fk] = getattr(self, "_{}_id".format(fk), None)
+            else:
+                serialize[fk] = self._get_foreign_object_id(
+                    getattr(self, fk, None)
+                )
 
         return serialize
 
@@ -249,6 +245,7 @@ class NetboxMapper():
         for attr, val in mapper_attributes.items():
             if isinstance(val, dict) and "id" in val and "url" in val:
                 mapper.__foreign_keys__.append(attr)
+                mapper.__original_foreign_keys_id__[attr] = val["id"]
                 mapper._set_property_foreign_key(attr, val)
             else:
                 mapper.__upstream_attrs__.append(attr)
@@ -282,11 +279,36 @@ class NetboxMapper():
         def setter(cls, value):
             setattr(self, "_{}".format(attr), value)
 
+        def getter_fk_id(*args):
+            original_id_condition = (
+                not hasattr(self, "_{}".format(attr)) and
+                attr in self.__original_foreign_keys_id__
+            )
+
+            if original_id_condition:
+                return self.__original_foreign_keys_id__[attr]
+            else:
+                return self._get_foreign_object_id(getattr(self, attr))
+
         try:
             self._fk_cache.pop(attr)
         except KeyError:
             pass
         setattr(type(self), attr, property(get_foreign_object, setter))
+        setattr(
+            type(self), "_{}_id".format(attr), property(getter_fk_id)
+        )
+
+    def _get_foreign_object_id(self, fk_obj):
+        if isinstance(fk_obj, int):
+            return fk_obj
+        else:
+            try:
+                # check that fk is iterable
+                iter(fk_obj)
+                return [getattr(i, "id", None) for i in fk_obj]
+            except TypeError:
+                return getattr(fk_obj, "id", None)
 
 
 class NetboxPassiveMapper(NetboxMapper):
