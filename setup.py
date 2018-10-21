@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name="netboxapi",
-    version="1.1.5",
+    version="1.1.6",
 
     description="Client API for Netbox",
 
