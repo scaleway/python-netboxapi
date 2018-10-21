@@ -1,4 +1,4 @@
-
+import copy
 import pytest
 import requests_mock
 
@@ -17,6 +17,9 @@ class TestNetboxMapper():
 
     @pytest.fixture()
     def mapper(self):
+        return self.get_mapper()
+
+    def get_mapper(self):
         return NetboxMapper(self.api, self.test_app_name, self.test_model)
 
     def test_get(self, mapper):
@@ -482,6 +485,27 @@ class TestNetboxMapper():
 
         with pytest.raises(ForbiddenAsChildError):
             obj_mapper.delete(1)
+
+    def test_eq_equals(self, mapper):
+        assert mapper == self.get_mapper()
+
+    def test_eq_not_equals(self, mapper):
+        assert mapper != NetboxMapper(self.api, "an_app", "a_model")
+
+    def test_eq_equals_child_mapper(self, mapper):
+        expected_attr = {
+            "count": 1, "next": None, "previous": None,
+            "results": [{"id": 1, "name": "test"}]
+        }
+        url = self.get_mapper_url(mapper)
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
+            child_mapper = next(mapper.get())
+            copy_child_mapper = next(mapper.get())
+
+        assert child_mapper == copy_child_mapper
+        copy_child_mapper.name = "else"
+        assert child_mapper != copy_child_mapper
 
     def get_mapper_url(self, mapper):
         return mapper.netbox_api.build_model_url(

@@ -28,6 +28,15 @@ class NetboxMapper():
             )
         ).rstrip("/") + "/"
 
+    def __eq__(self, other):
+        if not isinstance(other, NetboxMapper):
+            return False
+
+        if other._route != self._route:
+            return False
+
+        return self.to_dict() == other.to_dict()
+
     def get(self, *args, limit=50, **kwargs):
         """
         Get netbox objects
