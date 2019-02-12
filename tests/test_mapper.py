@@ -265,6 +265,8 @@ class TestNetboxMapper():
     def update_or_create_resource_json_callback(self, request, context):
         json = request.json()
         json["id"] = 1
+        assert "created" not in json
+        assert "last_updated" not in json
         return json
 
     def test_post_foreign_key(self, mapper):
@@ -421,7 +423,8 @@ class TestNetboxMapper():
                 "url": "{}/{}/".format(
                     mapper.netbox_api.build_model_url("ipam", "vrfs"), 1
                 ),
-            }, "choice": {"value": 1, "label": "Choice"}
+            }, "choice": {"value": 1, "label": "Choice"},
+            "created": "1970-01-01", "last_updated": "1970-01-01T00:00:00Z",
         }
         return self._get_child_mapper_variable_attr(mapper, expected_attr)
 
@@ -495,12 +498,20 @@ class TestNetboxMapper():
     def test_eq_equals_child_mapper(self, mapper):
         expected_attr = {
             "count": 1, "next": None, "previous": None,
-            "results": [{"id": 1, "name": "test"}]
+            "results": [{
+                "id": 1, "name": "test", "created": "1970-01-01",
+                "last_updated": "1970-01-01T00:00:00Z"
+            }]
         }
         url = self.get_mapper_url(mapper)
         with requests_mock.Mocker() as m:
             m.register_uri("get", url, json=expected_attr)
             child_mapper = next(mapper.get())
+
+        expected_attr["results"][0]["created"] = "1971-01-01"
+        expected_attr["results"][0]["last_updated"] = "1971-01-01T00:00:00Z"
+        with requests_mock.Mocker() as m:
+            m.register_uri("get", url, json=expected_attr)
             copy_child_mapper = next(mapper.get())
 
         assert child_mapper == copy_child_mapper

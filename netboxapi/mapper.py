@@ -179,7 +179,11 @@ class NetboxMapper():
     def to_dict(self):
         serialize = {}
         foreign_keys = self.__foreign_keys__.copy()
+        exclude = ("created", "last_updated")
         for a in self.__upstream_attrs__:
+            if a in exclude:
+                continue
+
             val = getattr(self, a, None)
             if isinstance(val, dict):
                 if "value" in val and "label" in val:
@@ -191,6 +195,9 @@ class NetboxMapper():
             serialize[a] = val
 
         for fk in foreign_keys:
+            if fk in exclude:
+                continue
+
             if hasattr(self, "_{}_id".format(fk)):
                 serialize[fk] = getattr(self, "_{}_id".format(fk), None)
             else:
