@@ -14,7 +14,7 @@ matrix:
       env: TOXENV=py38
 
 sudo: required
-dist: trusty
+dist: bionic
 
 before_install:
   - sudo apt-get -qq update
