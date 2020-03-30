@@ -1,7 +1,7 @@
 Python Netbox API
 =================
 
-[![Build Status](https://travis-ci.org/aruhier/python-netboxapi.svg?branch=master)](https://travis-ci.org/aruhier/python-netboxapi)  [![Coverage Status](https://coveralls.io/repos/github/aruhier/python-netboxapi/badge.svg?branch=master)](https://coveralls.io/github/aruhier/python-netboxapi?branch=master)
+[![Build Status](https://travis-ci.org/scaleway/python-netboxapi.svg?branch=master)](https://travis-ci.org/scaleway/python-netboxapi)  [![Coverage Status](https://coveralls.io/repos/github/scaleway/python-netboxapi/badge.svg?branch=master)](https://coveralls.io/github/scaleway/python-netboxapi?branch=master)
 
 Python client API for Netbox, using requests.
 
