@@ -76,6 +76,13 @@ class NetboxAPI():
             "delete", route, **kwargs
         )
 
+    def options(self, route, **kwargs):
+        """
+        :returns results: answer, as an unpacked json
+        """
+        response = self._generic_http_method_request("options", route, **kwargs)
+        return self._handle_json_response(response)
+
     def _generic_http_method_request(self, method, route, **kwargs):
         http_method = getattr(self.session, method)
         req_url = "{}/{}".format(self.url.rstrip("/"), route.lstrip("/"))
