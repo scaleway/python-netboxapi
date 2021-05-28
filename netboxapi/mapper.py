@@ -240,6 +240,20 @@ class NetboxMapper():
         delete_route = self._route + "{}/".format(id) if id else self._route
         return self.netbox_api.delete(delete_route)
 
+    def options(self):
+        """
+        Get netbox options on a model
+
+        Example:
+            >>> netbox_mapper.__app_name__ = "dcim"
+            >>> netbox_mapper.__model__ = "devices"
+            >>> netbox_mapper.options()
+
+            Will do an OPTIONS request to "/dcim/devices/"
+        """
+        return self.netbox_api.options(self._route)
+
+
     def _build_new_mapper_from(
             self, mapper_attributes, new_route, passive_mapper=False
     ):
